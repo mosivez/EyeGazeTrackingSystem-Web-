@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>眼动追踪系统 (Web)</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <!-- 可以引入 CSS 框架如 Bootstrap 或 Tailwind -->
+    <!-- 可以引入可视化库如 heatmap.js 或 D3.js -->
+    <script src="https://cdn.jsdelivr.net/npm/heatmap.js@2.0.5/heatmap.min.js"></script>
+    <style>
+        /* 临时添加一些基本样式 */
+        body { font-family: sans-serif; display: flex; flex-wrap: wrap; gap: 20px; padding: 15px;}
+        .column { display: flex; flex-direction: column; gap: 15px; }
+        .video-container, .gaze-display-container { border: 1px solid #ccc; padding: 10px; position: relative; background-color: #f0f0f0; }
+        #videoFeed { max-width: 640px; height: auto; display: block; background-color: #333;}
+        #gazePointMarker { width: 20px; height: 20px; background-color: rgba(255, 0, 0, 0.7); border-radius: 50%; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); pointer-events: none; transition: top 0.05s linear, left 0.05s linear; border: 1px solid white; box-shadow: 0 0 5px black;}
+        #calibrationTarget { width: 30px; height: 30px; background-color: rgba(0, 0, 255, 0.8); border: 2px solid white; border-radius: 50%; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); pointer-events: none; display: none; /* Initially hidden */ }
+        #calibrationTarget.animate { animation: pulse 1s infinite; }
+        @keyframes pulse { 0% { transform: translate(-50%, -50%) scale(1); } 50% { transform: translate(-50%, -50%) scale(1.2); } 100% { transform: translate(-50%, -50%) scale(1); } }
+        .controls button { padding: 8px 15px; margin: 5px; cursor: pointer; }
+        .status-info div { margin-bottom: 5px; }
+        .error-viz-container { border: 1px solid #ccc; padding: 10px; min-width: 300px; min-height: 200px; position: relative;}
+        #heatmapContainer { width: 100%; height: 100%; position: absolute; top: 0; left: 0;}
+        #errorStats { margin-top: 10px; font-size: 0.9em; }
+        .calibration-guide { background-color: #e0e0ff; padding: 10px; border-radius: 5px; }
+    </style>
+</head>
+<body>
+
+    <h1>基于 MediaPipe 的 Web 眼动追踪系统</h1>
+
+    <div class="column">
+        <div class="video-container" id="videoContainer">
+            <h2>摄像头视频流</h2>
+            <!-- 视频流将显示在这里 -->
+            <img id="videoFeed" src="{{ url_for('video_feed') }}" alt="Video Feed">
+            <!-- 注视点标记 -->
+            <div id="gazePointMarker" style="display: none;"></div>
+            <!-- 校准点标记 -->
+            <div id="calibrationTarget"></div>
+        </div>
+
+        <div class="controls">
+            <h2>控制面板</h2>
+            <button id="startButton">开始</button>
+            <button id="pauseButton" disabled>暂停</button>
+            <button id="resetButton">重置</button>
+            <button id="startCalibrationButton">开始校准</button>
+            <button id="saveDataButton">保存数据</button>
+            <!-- <button id="getErrorVizButton">获取误差图</button> -->
+        </div>
+    </div>
+
+    <div class="column">
+         <div class="status-info">
+             <h2>系统状态</h2>
+             <div id="systemStatus">状态: 未运行</div>
+             <div id="fpsDisplay">FPS: --</div>
+             <div id="resolutionDisplay">分辨率: --</div>
+             <div id="faceDetectedStatus">人脸检测: No</div>
+             <div id="calibrationStatus">校准状态: 未校准</div>
+             <div id="blinkCountDisplay">眨眼次数: 0</div>
+             <div id="gazeDirectionDisplay">注视方向: --</div>
+             <div id="networkLatencyDisplay">网络延迟 (API): -- ms</div>
+             <div id="lastMessage">消息: --</div>
+         </div>
+
+        <div class="calibration-guide" id="calibrationGuide" style="display: none;">
+            <h2>校准引导</h2>
+            <p id="calibrationInstructions">请点击“开始校准”按钮，然后注视屏幕上出现的蓝色圆点。当圆点移动时，请跟随注视。</p>
+            <p id="calibrationProgress">进度: 0/9</p>
+            <button id="collectDataButton" style="display: none;">采集当前点数据</button>
+            <button id="nextPointButton" style="display: none;">下一个点</button>
+            <button id="finishCalibrationButton" style="display: none;">完成校准</button>
+        </div>
+
+         <div class="error-viz-container">
+             <h2>误差评估 (校准后)</h2>
+             <div id="heatmapContainer"></div>
+             <div id="errorStats">平均误差: -- px | 标准差: -- px</div>
+              <p style="font-size: 0.8em; color: grey;">(热图显示校准点的平均误差)</p>
+         </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
