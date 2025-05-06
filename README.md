@@ -1,5 +1,3 @@
-好的，同学！我们已经一起构建了一个功能相对完整的“基于MediaPipe的Web眼动追踪系统”(EyeGazeTrackingWeb)。现在，我来为你撰写一份详细的模块功能和系统使用说明报告。
-
 ---
 
 **基于MediaPipe的Web眼动追踪系统 (EyeGazeTrackingWeb) 模块功能与系统使用说明报告**
